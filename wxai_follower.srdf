@@ -1,0 +1,151 @@
+<?xml version="1.0" ?>
+<!--
+  SRDF (Semantic Robot Description Format) for wxai_follower
+  
+  This file adds semantic/planning information to complement the URDF:
+  - Named groups of joints (move groups)
+  - Pre-defined robot poses
+  - Links that should never be checked for collision
+  - End-effector definitions
+-->
+<robot name="wxai">
+  
+  <!-- ================================================================ -->
+  <!-- GROUP DEFINITIONS                                                -->
+  <!-- Define collections of joints/links for motion planning          -->
+  <!-- ================================================================ -->
+  
+  <!-- The main arm: 6 revolute joints -->
+  <group name="arm">
+    <joint name="joint_0"/>
+    <joint name="joint_1"/>
+    <joint name="joint_2"/>
+    <joint name="joint_3"/>
+    <joint name="joint_4"/>
+    <joint name="joint_5"/>
+  </group>
+  
+  <!-- The gripper: 2 prismatic joints -->
+  <group name="gripper">
+    <joint name="left_carriage_joint"/>
+    <joint name="right_carriage_joint"/>
+  </group>
+  
+  <!-- Complete manipulator (arm + gripper) -->
+  <group name="manipulator">
+    <group name="arm"/>
+    <group name="gripper"/>
+  </group>
+  
+  <!-- ================================================================ -->
+  <!-- END-EFFECTOR DEFINITIONS                                         -->
+  <!-- Define which groups act as end-effectors                        -->
+  <!-- ================================================================ -->
+  
+  <end_effector name="gripper" parent_link="link_6" group="gripper"/>
+  
+  <!-- ================================================================ -->
+  <!-- NAMED POSES                                                      -->
+  <!-- Pre-defined joint configurations for common poses                -->
+  <!-- ================================================================ -->
+  
+  <!-- Home position: comfortable neutral pose -->
+  <group_state name="home" group="arm">
+    <joint name="joint_0" value="0.0"/>
+    <joint name="joint_1" value="0.5"/>
+    <joint name="joint_2" value="0.5"/>
+    <joint name="joint_3" value="0.0"/>
+    <joint name="joint_4" value="0.0"/>
+    <joint name="joint_5" value="0.0"/>
+  </group_state>
+  
+  <!-- Ready position: arm extended forward -->
+  <group_state name="ready" group="arm">
+    <joint name="joint_0" value="0.0"/>
+    <joint name="joint_1" value="0.785"/>  <!-- 45 degrees -->
+    <joint name="joint_2" value="1.047"/>  <!-- 60 degrees -->
+    <joint name="joint_3" value="0.0"/>
+    <joint name="joint_4" value="0.0"/>
+    <joint name="joint_5" value="0.0"/>
+  </group_state>
+  
+  <!-- Stowed position: compact for storage/transport -->
+  <group_state name="stowed" group="arm">
+    <joint name="joint_0" value="0.0"/>
+    <joint name="joint_1" value="1.571"/>  <!-- 90 degrees -->
+    <joint name="joint_2" value="1.571"/>  <!-- 90 degrees -->
+    <joint name="joint_3" value="0.0"/>
+    <joint name="joint_4" value="0.0"/>
+    <joint name="joint_5" value="0.0"/>
+  </group_state>
+  
+  <!-- Upright position: reaching straight up -->
+  <group_state name="upright" group="arm">
+    <joint name="joint_0" value="0.0"/>
+    <joint name="joint_1" value="1.571"/>  <!-- 90 degrees -->
+    <joint name="joint_2" value="0.0"/>
+    <joint name="joint_3" value="0.0"/>
+    <joint name="joint_4" value="0.0"/>
+    <joint name="joint_5" value="0.0"/>
+  </group_state>
+  
+  <!-- Gripper poses -->
+  <group_state name="open" group="gripper">
+    <joint name="left_carriage_joint" value="0.044"/>   <!-- Fully open -->
+    <joint name="right_carriage_joint" value="0.044"/>
+  </group_state>
+  
+  <group_state name="closed" group="gripper">
+    <joint name="left_carriage_joint" value="0.0"/>     <!-- Fully closed -->
+    <joint name="right_carriage_joint" value="0.0"/>
+  </group_state>
+  
+  <group_state name="half_open" group="gripper">
+    <joint name="left_carriage_joint" value="0.022"/>   <!-- Half open -->
+    <joint name="right_carriage_joint" value="0.022"/>
+  </group_state>
+  
+  <!-- ================================================================ -->
+  <!-- DISABLE COLLISIONS                                               -->
+  <!-- Pairs of links that should never be checked for collision       -->
+  <!-- (because they're adjacent or can never collide)                 -->
+  <!-- ================================================================ -->
+  
+  <!-- Adjacent links never collide -->
+  <disable_collisions link1="base_link" link2="link_1" reason="Adjacent"/>
+  <disable_collisions link1="link_1" link2="link_2" reason="Adjacent"/>
+  <disable_collisions link1="link_2" link2="link_3" reason="Adjacent"/>
+  <disable_collisions link1="link_3" link2="link_4" reason="Adjacent"/>
+  <disable_collisions link1="link_4" link2="link_5" reason="Adjacent"/>
+  <disable_collisions link1="link_5" link2="link_6" reason="Adjacent"/>
+  
+  <!-- Gripper components and parent link -->
+  <disable_collisions link1="link_6" link2="carriage_left" reason="Adjacent"/>
+  <disable_collisions link1="link_6" link2="carriage_right" reason="Adjacent"/>
+  <disable_collisions link1="link_6" link2="gripper_left" reason="Adjacent"/>
+  <disable_collisions link1="link_6" link2="gripper_right" reason="Adjacent"/>
+  
+  <!-- Gripper parts that can't collide with each other -->
+  <disable_collisions link1="carriage_left" link2="gripper_left" reason="Adjacent"/>
+  <disable_collisions link1="carriage_right" link2="gripper_right" reason="Adjacent"/>
+  
+  <!-- Camera mount -->
+  <disable_collisions link1="link_6" link2="camera_mount_d405" reason="Adjacent"/>
+  <disable_collisions link1="camera_mount_d405" link2="camera_link" reason="Adjacent"/>
+  
+  <!-- Base never collides with first few links (far apart) -->
+  <disable_collisions link1="base_link" link2="link_2" reason="Never"/>
+  <disable_collisions link1="base_link" link2="link_3" reason="Never"/>
+  
+  <!-- ================================================================ -->
+  <!-- VIRTUAL JOINTS (Optional)                                        -->
+  <!-- Used when robot is mobile or you want to plan in world frame   -->
+  <!-- ================================================================ -->
+  
+  <!-- Uncomment if you want to plan with a mobile base -->
+  <!--
+  <virtual_joint name="world_to_base" type="fixed" parent_frame="world" child_link="base_link"/>
+  -->
+  
+</robot>
+
